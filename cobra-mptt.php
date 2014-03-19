@@ -71,6 +71,10 @@ class Cobra_MPTT {
      */
     public $db = NULL;
 
+    /**
+     * @access  public
+     * @var     string  table name in the database
+     */
     public $table_name = 'mptt';
 
     /**
@@ -411,10 +415,10 @@ class Cobra_MPTT {
                 return FALSE;
             }
         }
-        /*else
+        else
         {
             $target->reload();
-        }*/
+        }
          
         $this->lock();
 
@@ -507,7 +511,7 @@ class Cobra_MPTT {
 
         // Make sure we have the most upto date version of this AFTER we lock
         $this->lock();
-        //$this->reload();
+        $this->reload();
          
         // Catch any database or other excpetions and unlock
         try
@@ -516,10 +520,10 @@ class Cobra_MPTT {
             {
                 $target = $this->factory_item($target);
             }
-            /*else
+            else
             {
                 $target->reload();
-            }*/
+            }
 
             // Stop $this being moved into a descendant or itself or disallow if target is root
             if ($target->is_descendant($this)
@@ -545,7 +549,7 @@ class Cobra_MPTT {
 
             $this->create_space($left_offset, $size);
 
-            //$this->reload();
+            $this->reload();
 
             $offset = ($left_offset - $this->left;
             
@@ -580,7 +584,7 @@ class Cobra_MPTT {
         }
 
         $this->unlock();
-        //$this->reload();
+        $this->reload();
 
         return $this;
     }
