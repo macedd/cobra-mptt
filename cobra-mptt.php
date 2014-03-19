@@ -54,43 +54,44 @@ class Cobra_MPTT {
     public $parent_column = 'parent_id';
 
     /**
-     * @access  private
+     * @access  protected
      * @var     array  default sorting for queries
      */
-    private $_sorting = array();
+    protected $_sorting = array();
 
     /**
-     * @access  public
+     * @access  protected
      * @var     array  instance data row
      */
-    public $_data = array();
+    protected $_data = array();
 
     /**
-     * @access  public
+     * @access  protected
      * @var     array  instance objects cache
      */
-    public $_objects = array();
+    protected $_objects = array();
 
     /**
-     * @access  public
+     * @access  protected
      * @var     object  database connection
      */
-    public $db = NULL;
+    protected $db = NULL;
 
     /**
-     * @access  public
+     * @access  protected
      * @var     string  table name in the database
      */
-    public $table_name = 'mptt';
+    protected $table_name = 'mptt';
 
     /**
-     * Load the default column names.
+     * Init the class database
      *
      * @access  public
-     * @param   mixed   parameter for find or object to load
+     * @param   string  mptt table name in the database
+     * @param   array|object   array with pdo parameters or instance of abstracted MpttDb
      * @return  void
      */
-    public function __construct(array $pdo = NULL)
+    public function __construct($table, $db)
     {
         if ( ! isset($this->_sorting))
         {
@@ -1234,7 +1235,7 @@ class Cobra_MPTT {
 
 } // End PDO MPTT
 
-class MpttPdoDb extends PDO
+class MpttPdoDb implements MpttDb extends PDO
 {
     public function exec($sql) {
         return parent::exec($sql);
