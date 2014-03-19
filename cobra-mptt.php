@@ -477,30 +477,71 @@ class Cobra_MPTT {
         $this->unlock();
     }
     
+    /**
+     * Move to First Child
+     *
+     * Moves the current node to the first child of the target node.
+     *
+     * @param Model_MPTT|integer $target target node id or Model_MPTT object.
+     * @return Model_MPTT
+     */
     public function move_to_first_child($target)
     {
         $target = $this->parent_from($target, $this->primary_column);
         return $this->move($target, TRUE, 1, 1, TRUE);
     }
     
+    /**
+     * Move to Last Child
+     *
+     * Moves the current node to the last child of the target node.
+     *
+     * @param Model_MPTT|integer $target target node id or Model_MPTT object.
+     * @return Model_MPTT
+     */
     public function move_to_last_child($target)
     {
         $target = $this->parent_from($target, $this->primary_column);
         return $this->move($target, FALSE, 0, 1, TRUE);
     }
     
+    /**
+     * Move to Previous Sibling.
+     *
+     * Moves the current node to the previous sibling of the target node.
+     *
+     * @param Model_MPTT|integer $target target node id or Model_MPTT object.
+     * @return Model_MPTT
+     */
     public function move_to_prev_sibling($target)
     {
         $target = $this->parent_from($target, $this->parent_column);
         return $this->move($target, TRUE, 0, 0, FALSE);
     }
     
+    /**
+     * Move to Next Sibling.
+     *
+     * Moves the current node to the next sibling of the target node.
+     *
+     * @param Model_MPTT|integer $target target node id or Model_MPTT object.
+     * @return Model_MPTT
+     */
     public function move_to_next_sibling($target)
     {
         $target = $this->parent_from($target, $this->parent_column);
         return $this->move($target, FALSE, 1, 0, FALSE);
     }
     
+    /**
+     * Move
+     *
+     * @param Cobra_MPTT|integer $target target node id or Cobra_MPTT object.
+     * @param bool $left_column use the left column or right column from target
+     * @param integer $left_offset left value for the new node position.
+     * @param integer $level_offset level
+     * @param bool allow this movement to be allowed on the root node
+     */
     protected function move($target, $left_column, $left_offset, $level_offset, $allow_root_target)
     {
         if ( ! $this->loaded)
@@ -558,8 +599,7 @@ class Cobra_MPTT {
                     $this->left_column = ($this->left_column + $offset),
                     $this->right_column = ($this->right_column + $offset),
                     $this->level_column = ($this->level_column + $level_offset),
-                    $this->scope_column = $target->scope,
-                    $this->parent_column = $this->parent_key
+                    $this->scope_column = $target->scope
                     WHERE
                         $this->left_column >= $this->left
                     AND $this->right_column <= $this->right
