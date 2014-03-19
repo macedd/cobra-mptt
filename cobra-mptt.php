@@ -1101,7 +1101,7 @@ class Cobra_MPTT {
 
     public function reload()
     {
-        $this->factory_item( $this->primary_key, true, true );
+        $this->factory_item( $this->primary_key, true );
     }
 
 
@@ -1117,7 +1117,7 @@ class Cobra_MPTT {
         $set = array();
 
         foreach ($resultset as $row) {
-            $obj = $this->factory_item($row, False, $self);
+            $obj = $this->factory_item($row, $self);
             $obj->loaded = True;
             $set[] = $obj;
         }
@@ -1133,10 +1133,10 @@ class Cobra_MPTT {
      * @param   bool       load item from database
      * @return  mixed
      */
-    public function factory_item( $item, $load = True, $self = False )
+    public function factory_item( $item, $self = False )
     {
         // Load the item from database
-        if ($load)
+        if ( is_integer($item) )
         {
             $sql = "SELECT * FROM $this->table_name
                     WHERE
