@@ -99,7 +99,7 @@ class Cobra_MPTT {
         $this->table_name = $table;
 
         if ( is_array($db) )
-            call_user_func_array(array($this, 'db_pdo'), $pdo)
+            call_user_func_array(array($this, 'db_pdo'), $pdo);
         elseif ( $db instanceof Cobra_MpttDb )
             $this->db = $db;
         else
@@ -603,7 +603,7 @@ class Cobra_MPTT {
 
             $this->reload();
 
-            $offset = ($left_offset - $this->left;
+            $offset = ($left_offset - $this->left);
             
             $sql = "UPDATE $this->table_name
                     SET 
@@ -651,7 +651,7 @@ class Cobra_MPTT {
         $sql = "SELECT IFNULL(MAX($this->scope_column), 0) as scope
                 FROM $this->table_name
                 ";
-        $scope = $this->db->query($sql)[0]
+        $scope = $this->db->query($sql)[0];
 
         if ($scope AND intval($scope['scope']) > 0)
             return intval($scope['scope']) + 1;
@@ -770,7 +770,7 @@ class Cobra_MPTT {
             
 
             $result = $this->db->query($sql);
-            $this->_objects[$object_id] = $this->factory_set($result)
+            $this->_objects[$object_id] = $this->factory_set($result);
         }
 
         return $this->_objects[$object_id];
@@ -1137,7 +1137,7 @@ class Cobra_MPTT {
                 return parent::__get($column);
         }
     }
-    s
+    
     public function __set($column, $value)
     {
         switch ($column)
@@ -1221,7 +1221,7 @@ class Cobra_MPTT {
         foreach ($fields as $key)
         {
             if (in_array($key, $item))
-                $instance->_data[$this->$key] = $item[$this->$key]
+                $instance->_data[$this->$key] = $item[$this->$key];
             else
                 $instance->_data[$this->$key] = null;
         }
@@ -1245,7 +1245,7 @@ interface Cobra_MpttDb {
     public function insert_id();
 }
 
-class PDO_MpttDb implements Cobra_MpttDb extends PDO
+class PDO_MpttDb extends PDO implements Cobra_MpttDb
 {
     public function exec($sql) {
         return parent::exec($sql);
