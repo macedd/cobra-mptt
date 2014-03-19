@@ -54,6 +54,12 @@ class Cobra_MPTT {
     public $parent_column = 'parent_id';
 
     /**
+     * @access  private
+     * @var     array  default sorting for queries
+     */
+    private $_sorting = array();
+
+    /**
      * @access  public
      * @var     array  instance data row
      */
@@ -670,6 +676,7 @@ class Cobra_MPTT {
                 WHERE 
                     $this->left_column = 1
                 AND $this->scope_column = $scope
+                ORDER BY $this->_sorting[0] $this->_sorting[1]
                 ";
         $result = $this->db->query($sql);
         return $this->factory_set($result)[0];
@@ -686,6 +693,7 @@ class Cobra_MPTT {
         $sql = "SELECT * FROM $this->table_name
                 WHERE 
                     $this->left_column = 1
+                ORDER BY $this->_sorting[0] $this->_sorting[1]
                 ";
         $result = $this->db->query($sql);
         return $this->factory_set($result);
@@ -706,7 +714,9 @@ class Cobra_MPTT {
         {
             $sql = "SELECT * FROM $this->table_name
                     WHERE 
-                    $this->primary_column = $this->parent_key";
+                    $this->primary_column = $this->parent_key
+                    ORDER BY $this->_sorting[0] $this->_sorting[1]
+                ";
 
             $result = $this->db->query($sql);
 
@@ -792,7 +802,9 @@ class Cobra_MPTT {
 
             if ( ! is_null($scope))
             {
-                $sql .= "AND $this->scope_column = $scope \n";
+                $sql .= "AND $this->scope_column = $scope
+                         ORDER BY $this->_sorting[0] $this->_sorting[1]
+                        ";
             }
             else
             {
