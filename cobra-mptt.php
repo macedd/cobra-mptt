@@ -93,13 +93,17 @@ class Cobra_MPTT {
      */
     public function __construct($table, $db)
     {
-        if ( ! isset($this->_sorting))
-        {
-            $this->sorting = array($this->left_column, 'ASC');
-        }
+        if ( ! $this->_sorting)
+            $this->_sorting = array($this->left_column, 'ASC');
 
-        if ($pdo)
+        $this->table_name = $table;
+
+        if ( is_array($db) )
             call_user_func_array(array($this, 'db_pdo'), $pdo)
+        elseif ( $db instanceof Cobra_MpttDb )
+            $this->db = $db;
+        else
+            throw new Exception("Cobra_MpttDb required", 1);
     }
 
     /**
@@ -1230,12 +1234,18 @@ class Cobra_MPTT {
     */
     public function db_pdo($pdo_dsn, $pdo_user=null, $pdo_pass=null)
     {
-        $this->db = new MpttPdoDb($pdo_dsn, $pdo_user, $pdo_pass)
+        $this->db = new PDO_MpttDb($pdo_dsn, $pdo_user, $pdo_pass);
     }
 
 } // End PDO MPTT
 
-class MpttPdoDb implements MpttDb extends PDO
+interface Cobra_MpttDb {
+    public function exec($sql);
+    public function query($sql);
+    public function insert_id();
+}
+
+class PDO_MpttDb implements Cobra_MpttDb extends PDO
 {
     public function exec($sql) {
         return parent::exec($sql);
