@@ -121,7 +121,7 @@ class Cobra_MPTT {
      * Is the current node a descendant of the supplied node.
      *
      * @access  public
-     * @param   ORM_MPTT|int  ORM_MPTT object or primary key value of target node
+     * @param   Cobra_MPTT|int  Cobra_MPTT object or primary key value of target node
      * @return  bool
      */
     public function is_descendant($target)
@@ -142,7 +142,7 @@ class Cobra_MPTT {
      * Checks if the current node is a direct child of the supplied node.
      * 
      * @access  public
-     * @param   ORM_MPTT|int  ORM_MPTT object or primary key value of target node
+     * @param   Cobra_MPTT|int  Cobra_MPTT object or primary key value of target node
      * @return  bool
      */
     public function is_child($target)
@@ -159,7 +159,7 @@ class Cobra_MPTT {
      * Checks if the current node is a direct parent of a specific node.
      * 
      * @access  public
-     * @param   ORM_MPTT|int  ORM_MPTT object or primary key value of child node
+     * @param   Cobra_MPTT|int  Cobra_MPTT object or primary key value of child node
      * @return  bool
      */
     public function is_parent($target)
@@ -177,7 +177,7 @@ class Cobra_MPTT {
      * (Both have the same direct parent)
      * 
      * @access  public
-     * @param   ORM_MPTT|int  ORM_MPTT object or primary key value of target node
+     * @param   Cobra_MPTT|int  Cobra_MPTT object or primary key value of target node
      * @return  bool
      */
     public function is_sibling($target)
@@ -270,7 +270,7 @@ class Cobra_MPTT {
      *
      * @access  public
      * @param   int       the new scope
-     * @return  ORM_MPTT
+     * @return  Cobra_MPTT
      * @throws  Validation_Exception
      */
     public function make_root($scope = NULL)
@@ -305,12 +305,12 @@ class Cobra_MPTT {
     }
 
     /**
-     * Sets the parent_column value to the given targets column value. Returns the target ORM_MPTT object.
+     * Sets the parent_column value to the given targets column value. Returns the target Cobra_MPTT object.
      * 
      * @access  protected
-     * @param   ORM_MPTT|int  primary key value or ORM_MPTT object of target node
+     * @param   Cobra_MPTT|int  primary key value or Cobra_MPTT object of target node
      * @param   string        name of the targets nodes column to use
-     * @return  ORM_MPTT
+     * @return  Cobra_MPTT
      */
     protected function parent_from($target, $column = NULL)
     {
@@ -340,8 +340,8 @@ class Cobra_MPTT {
      * Inserts a new node as the first child of the target node.
      * 
      * @access  public
-     * @param   ORM_MPTT|int  primary key value or ORM_MPTT object of target node
-     * @return  ORM_MPTT
+     * @param   Cobra_MPTT|int  primary key value or Cobra_MPTT object of target node
+     * @return  Cobra_MPTT
      */
     public function insert_as_first_child($target)
     {
@@ -353,8 +353,8 @@ class Cobra_MPTT {
      * Inserts a new node as the last child of the target node.
      * 
      * @access  public
-     * @param   ORM_MPTT|int  primary key value or ORM_MPTT object of target node
-     * @return  ORM_MPTT
+     * @param   Cobra_MPTT|int  primary key value or Cobra_MPTT object of target node
+     * @return  Cobra_MPTT
      */
     public function insert_as_last_child($target)
     {
@@ -366,8 +366,8 @@ class Cobra_MPTT {
      * Inserts a new node as a previous sibling of the target node.
      * 
      * @access  public
-     * @param   ORM_MPTT|int  primary key value or ORM_MPTT object of target node
-     * @return  ORM_MPTT
+     * @param   Cobra_MPTT|int  primary key value or Cobra_MPTT object of target node
+     * @return  Cobra_MPTT
      */
     public function insert_as_prev_sibling($target)
     {
@@ -379,8 +379,8 @@ class Cobra_MPTT {
      * Inserts a new node as the next sibling of the target node.
      * 
      * @access  public
-     * @param   ORM_MPTT|int  primary key value or ORM_MPTT object of target node
-     * @return  ORM_MPTT
+     * @param   Cobra_MPTT|int  primary key value or Cobra_MPTT object of target node
+     * @return  Cobra_MPTT
      */
     public function insert_as_next_sibling($target)
     {
@@ -392,11 +392,11 @@ class Cobra_MPTT {
      * Insert the object
      *
      * @access  protected
-     * @param   ORM_MPTT|int  primary key value or ORM_MPTT object of target node.
+     * @param   Cobra_MPTT|int  primary key value or Cobra_MPTT object of target node.
      * @param   string        target object property to take new left value from
      * @param   int           offset for left value
      * @param   int           offset for level value
-     * @return  ORM_MPTT
+     * @return  Cobra_MPTT
      * @throws  Validation_Exception
      */
     protected function insert($target, $copy_left_from, $left_offset, $level_offset)
@@ -613,7 +613,7 @@ class Cobra_MPTT {
      * 
      * @access  public
      * @param   int             scope
-     * @return  ORM_MPTT|FALSE
+     * @return  Cobra_MPTT|FALSE
      */
     public function root($scope = NULL)
     {
@@ -639,7 +639,7 @@ class Cobra_MPTT {
      * Returns all root node's
      * 
      * @access  public
-     * @return  ORM_MPTT
+     * @return  Cobra_MPTT
      */
     public function roots()
     {
@@ -655,7 +655,7 @@ class Cobra_MPTT {
      * Returns the parent node of the current node
      * 
      * @access  public
-     * @return  ORM_MPTT
+     * @return  Cobra_MPTT
      */
     public function parent()
     {
@@ -683,7 +683,7 @@ class Cobra_MPTT {
      * @param   bool      include current node
      * @param   string    direction to order the left column by
      * @param   bool      retrieve the direct parent only
-     * @return  ORM_MPTT
+     * @return  Cobra_MPTT
      */
     public function parents($root = TRUE, $with_self = FALSE, $direction = 'ASC', $direct_parent_only = FALSE)
     {
@@ -727,7 +727,7 @@ class Cobra_MPTT {
      * @param   bool     include the current node
      * @param   string   direction to order the left column by
      * @param   int      number of children to get
-     * @return  ORM_MPTT
+     * @return  Cobra_MPTT
      */
     public function children($self = FALSE, $direction = 'ASC', $limit = FALSE)
     {
@@ -774,7 +774,7 @@ class Cobra_MPTT {
      * @access  public
      * @param   bool  include the current node
      * @param   string  direction to order the left column by
-     * @return  ORM_MPTT
+     * @return  Cobra_MPTT
      */
     public function siblings($self = FALSE, $direction = 'ASC')
     {
@@ -809,7 +809,7 @@ class Cobra_MPTT {
      * @access  public
      * @param   bool  include the current node
      * @param   string  direction to order the left column by
-     * @return  ORM_MPTT
+     * @return  Cobra_MPTT
      */
     public function leaves($self = FALSE, $direction = 'ASC')
     {
@@ -825,7 +825,7 @@ class Cobra_MPTT {
      * @param   bool      include direct children only
      * @param   bool      include leaves only
      * @param   int       number of results to get
-     * @return  ORM_MPTT
+     * @return  Cobra_MPTT
      */
     public function descendants($self = FALSE, $direction = 'ASC', $direct_children_only = FALSE, $leaves_only = FALSE, $limit = FALSE)
     {
@@ -981,7 +981,7 @@ class Cobra_MPTT {
      *
      * @access  public
      * @param   int       left    Starting value for left branch
-     * @param   ORM_MPTT  target  Target node to use as root
+     * @param   Cobra_MPTT  target  Target node to use as root
      * @return  int
      */
     public function rebuild_tree($left = 1, $target = NULL)
