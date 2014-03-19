@@ -702,7 +702,8 @@ class Cobra_MPTT {
         if ($this->is_root())
             return NULL;
 
-        if ( ! in_array('parent', $this->_objects) ) {
+        if ( ! in_array('parent', $this->_objects) )
+        {
             $sql = "SELECT * FROM $this->table_name
                     WHERE 
                     $this->primary_column = $this->parent_key";
@@ -821,6 +822,8 @@ class Cobra_MPTT {
         $object_id = "siblings_$self-$direction";
         if (! in_array($object_id, $this->_objects))
         {
+            $parent = $this->parent;
+
             $sql = "SELECT * FROM $this->table_name
                     WHERE
                         $this->left_column > $parent->left
@@ -889,7 +892,7 @@ class Cobra_MPTT {
                     $sql .= "AND (
                                    $this->level_column = $this->level
                                 OR $this->level_column = ($this->level + 1)
-                            )";
+                            )\n";
                 }
                 else
                 {
