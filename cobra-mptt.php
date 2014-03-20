@@ -279,8 +279,6 @@ class Cobra_MPTT {
                         )
                     ";
 
-            print_r($this);
-            echo $sql; exit;
             $this->_db->exec($sql);
             $this->primary_key = $this->_db->insert_id();
         }
@@ -1170,16 +1168,22 @@ class Cobra_MPTT {
         {
             case 'left':
                 $this->_data[$this->left_column] = $value;
+                break;
             case 'right':
                 $this->_data[$this->right_column] = $value;
+                break;
             case 'scope':
                 $this->_data[$this->scope_column] = $value;
+                break;
             case 'level':
                 $this->_data[$this->level_column] = $value;
+                break;
             case 'primary_key':
                 $this->_data[$this->primary_column] = $value;
+                break;
             case 'parent_key':
                 $this->_data[$this->parent_column] = $value;
+                break;
             default:
                 $this->$column = $value;
         }
