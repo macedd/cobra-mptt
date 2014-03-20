@@ -54,6 +54,12 @@ class Cobra_MPTT {
     public $parent_column = 'parent_id';
 
     /**
+     * @access  public
+     * @var     string  tells if instance was loaded from db or not
+     */
+    public $loaded = false;
+
+    /**
      * @access  protected
      * @var     array  default sorting for queries
      */
@@ -668,7 +674,9 @@ class Cobra_MPTT {
         $sql = "SELECT IFNULL(MAX($this->scope_column), 0) as scope
                 FROM $this->_table_name
                 ";
-        $scope = $this->_db->query($sql)[0];
+
+        foreach ($this->_db->query($sql) as $row)
+            $scope = $row;
 
         if ($scope AND intval($scope['scope']) > 0)
             return intval($scope['scope']) + 1;
