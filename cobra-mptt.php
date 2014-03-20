@@ -101,6 +101,8 @@ class Cobra_MPTT {
      */
     public static $table_name = 'mptt';
 
+    public static $schema_create = False;
+
     /**
      * Init the class database
      *
@@ -114,19 +116,7 @@ class Cobra_MPTT {
         if ( ! $this->_sorting)
             $this->_sorting = array($this->left_column, 'ASC');
 
-        if ( $table )
-            $this->_table_name = $table;
-        elseif ( self::$table_name )
-            $this->_table_name = self::$table_name;
-
-        if ( is_array($db) )
-            call_user_func_array(array($this, 'db_pdo'), $pdo);
-        elseif ( $db instanceof Cobra_MpttDb )
-            $this->_db = $db;
-        elseif ( self::$db instanceof Cobra_MpttDb )
-            $this->_db = self::$db;
-        else
-            throw new Exception("Cobra_MpttDb required", 1);
+        $this->db_init($table, $db);
     }
 
     /**
@@ -278,7 +268,7 @@ class Cobra_MPTT {
         } elseif ( ! $this->primary_key ) {
             $sql = "INSERT INTO $this->_table_name
                     ($this->left_column, $this->right_column,
-                        $this->level_column, $this->scope_column
+                        $this->level_column, $this->scope_column,
                         $this->parent_column)
                     VALUES (
                         $this->left,
@@ -289,6 +279,8 @@ class Cobra_MPTT {
                         )
                     ";
 
+            print_r($this);
+            echo $sql; exit;
             $this->_db->exec($sql);
             $this->primary_key = $this->_db->insert_id();
         }
@@ -330,7 +322,7 @@ class Cobra_MPTT {
         $this->level = 1;
         $this->left = 1;
         $this->right = 2;
-        $this->parent_key = NULL;
+        $this->parent_key = 0;
 
         return $this->save();
     }
@@ -361,7 +353,7 @@ class Cobra_MPTT {
         }
         else
         {
-            $this->parent_key = NULL;
+            $this->parent_key = 0;
         }
 
         return $target;
@@ -696,7 +688,7 @@ class Cobra_MPTT {
         }
         elseif (is_null($scope) AND ! $this->loaded)
         {
-            throw new Exception('root() must be called on an Cobra_MPTT object instance.');
+            throw new Exception('root() must be called on a loaded Cobra_MPTT object instance.');
         }
         
         $sql = "SELECT * FROM $this->_table_name
@@ -1274,11 +1266,38 @@ class Cobra_MPTT {
     }
 
     /*
-    * Setup the PDO database instance
+    * Setup the database instance
     */
-    public function db_pdo($pdo_dsn, $pdo_user=null, $pdo_pass=null)
+    public function db_init($table = null, $db = null, $schema = False)
     {
-        $this->_db = new PDO_MpttDb($pdo_dsn, $pdo_user, $pdo_pass);
+        if ( $table )
+            $this->_table_name = $table;
+        elseif ( self::$table_name )
+            $this->_table_name = self::$table_name;
+
+        if ( is_array($db) )
+            $this->_db = new PDO_MpttDb($db[0], $db[1], $db[2]);
+        elseif ( $db instanceof Cobra_MpttDb )
+            $this->_db = $db;
+        elseif ( self::$db instanceof Cobra_MpttDb )
+            $this->_db = self::$db;
+        else
+            throw new Exception("Cobra_MpttDb required", 1);
+
+        if ($schema || self::$schema_create)
+        {
+            $this->_db->exec("
+                         CREATE TABLE `$this->_table_name` (
+                        `$this->primary_column` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                        `$this->parent_column` INT UNSIGNED NULL,
+                        `$this->left_column` INT UNSIGNED NOT NULL,
+                        `$this->right_column` INT UNSIGNED NOT NULL,
+                        `$this->level_column` INT UNSIGNED NOT NULL,
+                        `$this->scope_column` INT UNSIGNED NOT NULL
+                        );
+                ");
+            self::$schema_create = False;
+        }
     }
 
 } // End PDO MPTT
