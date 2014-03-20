@@ -453,7 +453,7 @@ class Cobra_MPTT {
          
         $this->lock();
 
-        $this->left = $target->{$copy_left_from} + $left_offset;
+        $this->left = $target->_data[$copy_left_from] + $left_offset;
         $this->right = $this->left + 1;
         $this->level = $target->level + $level_offset;
         $this->scope = $target->scope;
@@ -464,7 +464,7 @@ class Cobra_MPTT {
         {
             $this->save();
         }
-        catch (PDO_Exception $e)
+        catch (PDOException $e)
         {
             // We had a problem saving, make sure we clean up the tree
             $this->delete_space($this->left);
@@ -499,7 +499,7 @@ class Cobra_MPTT {
 
             $this->delete_space($this->left, $this->size);
         }
-        catch (PDO_Exception $e)
+        catch (PDOException $e)
         {
             $this->unlock();
             throw $e;
@@ -640,7 +640,7 @@ class Cobra_MPTT {
 
             $this->delete_space($this->left, $size);
         }
-        catch (PDO_Exception $e)
+        catch (PDOException $e)
         {
             // Unlock table and re-throw exception
             $this->unlock();
@@ -703,7 +703,7 @@ class Cobra_MPTT {
                 WHERE 
                     $this->left_column = 1
                 AND $this->scope_column = $scope
-                ORDER BY $this->_sorting[0] $this->_sorting[1]
+                ORDER BY ". $this->_sorting[0] ." ". $this->_sorting[1] ."
                 ";
         $result = $this->_db->query($sql);
         return $this->factory_set($result)[0];
@@ -720,7 +720,7 @@ class Cobra_MPTT {
         $sql = "SELECT * FROM $this->_table_name
                 WHERE 
                     $this->left_column = 1
-                ORDER BY $this->_sorting[0] $this->_sorting[1]
+                ORDER BY ". $this->_sorting[0] ." ". $this->_sorting[1] ."
                 ";
         $result = $this->_db->query($sql);
         return $this->factory_set($result);
@@ -742,7 +742,7 @@ class Cobra_MPTT {
             $sql = "SELECT * FROM $this->_table_name
                     WHERE 
                     $this->primary_column = $this->parent_key
-                    ORDER BY $this->_sorting[0] $this->_sorting[1]
+                    ORDER BY ". $this->_sorting[0] ." ". $this->_sorting[1] ."
                 ";
 
             $result = $this->_db->query($sql);
@@ -830,7 +830,7 @@ class Cobra_MPTT {
             if ( ! is_null($scope))
             {
                 $sql .= "AND $this->scope_column = $scope
-                         ORDER BY $this->_sorting[0] $this->_sorting[1]
+                         ORDER BY ". $this->_sorting[0] ." ". $this->_sorting[1] ."
                         ";
             }
             else
@@ -1024,7 +1024,13 @@ class Cobra_MPTT {
     protected function lock()
     {
         $sql = "LOCK TABLE $this->_table_name WRITE";
-        $this->_db->exec($sql);
+        try {
+            $this->_db->exec($sql);
+        } catch ( PDOException $e ) {
+            if ( !strpos($e->getMessage(), 'LOCK') )
+                throw $e;
+            // no lock support, continue
+        }
     }
 
     /**
@@ -1036,7 +1042,13 @@ class Cobra_MPTT {
     protected function unlock()
     {
         $sql = "UNLOCK TABLES";
-        $this->_db->exec($sql);
+        try {
+            $this->_db->exec($sql);
+        } catch ( PDOException $e ) {
+            if ( !strpos($e->getMessage(), 'LOCK') )
+                throw $e;
+            // no lock support, continue
+        }
     }
 
     /**
@@ -1183,7 +1195,8 @@ class Cobra_MPTT {
 
     public function reload()
     {
-        $this->factory_item( $this->primary_key, true );
+        if ( $this->primary_key )
+            $this->factory_item( $this->primary_key, true );
     }
 
 
