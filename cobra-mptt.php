@@ -1,4 +1,4 @@
-<?php defined('SYSPATH') OR die('No direct access allowed.');
+<?php //defined('SYSPATH') OR die('No direct access allowed.');
 
 /**
  * Modified Preorder Tree Traversal Class.
@@ -21,7 +21,7 @@ class Cobra_MPTT {
      * @access  public
      * @var     string  primary key column name
      */
-    public $primary_column = 'pk';
+    public $primary_column = 'id';
 
     /**
      * @access  public
@@ -73,15 +73,27 @@ class Cobra_MPTT {
 
     /**
      * @access  protected
-     * @var     object  database connection
+     * @var     object  instance database connection
      */
-    protected $db = NULL;
+    protected $_db = NULL;
+
+    /**
+     * @access  public
+     * @var     object  default database connection for instances creation
+     */
+    public static $db = NULL;
 
     /**
      * @access  protected
-     * @var     string  table name in the database
+     * @var     string  table name user for the mptt instance process
      */
-    protected $table_name = 'mptt';
+    protected $_table_name = NULL;
+
+    /**
+     * @access  public
+     * @var     string  default table name for instances creation
+     */
+    public static $table_name = 'mptt';
 
     /**
      * Init the class database
@@ -91,17 +103,22 @@ class Cobra_MPTT {
      * @param   array|object   array with pdo parameters or instance of abstracted MpttDb
      * @return  void
      */
-    public function __construct($table, $db)
+    public function __construct($table = null, $db = null)
     {
         if ( ! $this->_sorting)
             $this->_sorting = array($this->left_column, 'ASC');
 
-        $this->table_name = $table;
+        if ( $table )
+            $this->_table_name = $table;
+        elseif ( self::$table_name )
+            $this->_table_name = self::$table_name;
 
         if ( is_array($db) )
             call_user_func_array(array($this, 'db_pdo'), $pdo);
         elseif ( $db instanceof Cobra_MpttDb )
-            $this->db = $db;
+            $this->_db = $db;
+        elseif ( self::$db instanceof Cobra_MpttDb )
+            $this->_db = self::$db;
         else
             throw new Exception("Cobra_MpttDb required", 1);
     }
@@ -243,7 +260,7 @@ class Cobra_MPTT {
         if ($this->loaded === TRUE)
         {
             if ( $this->primary_key ) {
-                $sql = "UPDATE $this->table_name
+                $sql = "UPDATE $this->_table_name
                         SET 
                         $this->left_column = $this->left,
                         $this->right_column = $this->right,
@@ -252,9 +269,9 @@ class Cobra_MPTT {
                         $this->parent_column = $this->parent_key
                         WHERE $this->primary_column = $this->primary_key
                         ";
-                $this->db->exec($sql);
+                $this->_db->exec($sql);
             } else {
-                $sql = "INSERT INTO $this->table_name
+                $sql = "INSERT INTO $this->_table_name
                         ($this->left_column, $this->right_column,
                             $this->level_column, $this->scope_column
                             $this->parent_column)
@@ -266,9 +283,9 @@ class Cobra_MPTT {
                             $this->parent_key
                             )
                         ";
-                $this->db->exec($sql);
+                $this->_db->exec($sql);
 
-                $this->primary_key = $this->db->insert_id();
+                $this->primary_key = $this->_db->insert_id();
             }
             return $this;
         }
@@ -469,13 +486,13 @@ class Cobra_MPTT {
 
         try
         {
-            $sql = "DELETE FROM $this->table_name
+            $sql = "DELETE FROM $this->_table_name
                     WHERE
                         $this->left_column >= $this->left
                     AND $this->right_column <= $this->right
                     AND $this->scope_column = $this->scope
                     ";
-            $this->db->exec($sql);
+            $this->_db->exec($sql);
 
             $this->delete_space($this->left, $this->size);
         }
@@ -605,7 +622,7 @@ class Cobra_MPTT {
 
             $offset = ($left_offset - $this->left);
             
-            $sql = "UPDATE $this->table_name
+            $sql = "UPDATE $this->_table_name
                     SET 
                     $this->left_column = ($this->left_column + $offset),
                     $this->right_column = ($this->right_column + $offset),
@@ -616,7 +633,7 @@ class Cobra_MPTT {
                     AND $this->right_column <= $this->right
                     AND $this->scope_column = $this->scope
                     ";
-            $this->db->exec($sql);
+            $this->_db->exec($sql);
 
             $this->delete_space($this->left, $size);
         }
@@ -649,9 +666,9 @@ class Cobra_MPTT {
     protected function get_next_scope()
     {
         $sql = "SELECT IFNULL(MAX($this->scope_column), 0) as scope
-                FROM $this->table_name
+                FROM $this->_table_name
                 ";
-        $scope = $this->db->query($sql)[0];
+        $scope = $this->_db->query($sql)[0];
 
         if ($scope AND intval($scope['scope']) > 0)
             return intval($scope['scope']) + 1;
@@ -677,13 +694,13 @@ class Cobra_MPTT {
             throw new Exception(':method must be called on an Cobra_MPTT object instance.', array(':method' => 'root'));
         }
         
-        $sql = "SELECT * FROM $this->table_name
+        $sql = "SELECT * FROM $this->_table_name
                 WHERE 
                     $this->left_column = 1
                 AND $this->scope_column = $scope
                 ORDER BY $this->_sorting[0] $this->_sorting[1]
                 ";
-        $result = $this->db->query($sql);
+        $result = $this->_db->query($sql);
         return $this->factory_set($result)[0];
     }
 
@@ -695,12 +712,12 @@ class Cobra_MPTT {
      */
     public function roots()
     {
-        $sql = "SELECT * FROM $this->table_name
+        $sql = "SELECT * FROM $this->_table_name
                 WHERE 
                     $this->left_column = 1
                 ORDER BY $this->_sorting[0] $this->_sorting[1]
                 ";
-        $result = $this->db->query($sql);
+        $result = $this->_db->query($sql);
         return $this->factory_set($result);
     }
 
@@ -717,13 +734,13 @@ class Cobra_MPTT {
 
         if ( ! in_array('parent', $this->_objects) )
         {
-            $sql = "SELECT * FROM $this->table_name
+            $sql = "SELECT * FROM $this->_table_name
                     WHERE 
                     $this->primary_column = $this->parent_key
                     ORDER BY $this->_sorting[0] $this->_sorting[1]
                 ";
 
-            $result = $this->db->query($sql);
+            $result = $this->_db->query($sql);
 
             $this->_objects['parent'] = $this->factory_set($result)[0];
         }
@@ -748,7 +765,7 @@ class Cobra_MPTT {
         {
             $suffix = $with_self ? '=' : '';
 
-            $sql = "SELECT * FROM $this->table_name
+            $sql = "SELECT * FROM $this->_table_name
                     WHERE 
                         $this->left_column <$suffix $this->left
                     AND $this->right_column >$suffix $this->right
@@ -769,7 +786,7 @@ class Cobra_MPTT {
             $sql .= "ORDER BY $this->left_column $direction";
             
 
-            $result = $this->db->query($sql);
+            $result = $this->_db->query($sql);
             $this->_objects[$object_id] = $this->factory_set($result);
         }
 
@@ -802,7 +819,7 @@ class Cobra_MPTT {
         $object_id = "fulltree_$scope";
         if (! in_array($object_id, $this->_objects))
         {
-            $sql = "SELECT * FROM $this->table_name
+            $sql = "SELECT * FROM $this->_table_name
             ";
 
             if ( ! is_null($scope))
@@ -819,7 +836,7 @@ class Cobra_MPTT {
                             ";
             }
 
-            $result = $this->db->query($sql);
+            $result = $this->_db->query($sql);
             $this->_objects[$object_id] = $this->factory_set($result);
         }
 
@@ -841,7 +858,7 @@ class Cobra_MPTT {
         {
             $parent = $this->parent;
 
-            $sql = "SELECT * FROM $this->table_name
+            $sql = "SELECT * FROM $this->_table_name
                     WHERE
                         $this->left_column > $parent->left
                     AND $this->right_column < $parent->right
@@ -856,8 +873,8 @@ class Cobra_MPTT {
              
             $sql .= "ORDER BY $this->left_column $direction";
 
-            $result = $this->db->query($sql);
-            $this->_objects[$object_id] = $this->db_object($result);
+            $result = $this->_db->query($sql);
+            $this->_objects[$object_id] = $this->_db_object($result);
         }
 
         return $this->_objects[$object_id];
@@ -895,7 +912,7 @@ class Cobra_MPTT {
             $left_operator = $self ? '>=' : '>';
             $right_operator = $self ? '<=' : '<';
             
-            $sql = "SELECT * FROM $this->table_name
+            $sql = "SELECT * FROM $this->_table_name
                     WHERE
                         $this->left_column $left_operator $this->left
                     AND $this->right_column $right_operator $this->right
@@ -929,8 +946,8 @@ class Cobra_MPTT {
             
             $sql .= "ORDER BY $this->left_column $direction \n";
                     
-            $result = $this->db->query($sql);
-            $this->_objects[$object_id] = $this->db_object($result);
+            $result = $this->_db->query($sql);
+            $this->_objects[$object_id] = $this->_db_object($result);
         }
         return $this->_objects[$object_id];
     }
@@ -945,23 +962,23 @@ class Cobra_MPTT {
      */
     protected function create_space($start, $size = 2)
     {
-        $sql = "UPDATE $this->table_name
+        $sql = "UPDATE $this->_table_name
                 SET
                     $this->left_column = ($this->left_column + $size)
                 WHERE
                     $this->left_column >= $start
                 AND $this->scope_column = $this->scope
                 ";
-        $this->db->exec($sql);
+        $this->_db->exec($sql);
 
-        $sql = "UPDATE $this->table_name
+        $sql = "UPDATE $this->_table_name
                 SET
                     $this->right_column = ($this->right_column + $size)
                 WHERE
                     $this->right_column >= $start
                 AND $this->scope_column = $this->scope
                 ";
-        $this->db->exec($sql);
+        $this->_db->exec($sql);
     }
 
     /**
@@ -974,23 +991,23 @@ class Cobra_MPTT {
      */
     protected function delete_space($start, $size = 2)
     {
-        $sql = "UPDATE $this->table_name
+        $sql = "UPDATE $this->_table_name
                 SET
                     $this->left_column = ($this->left_column - $size)
                 WHERE
                     $this->left_column >= $start
                 AND $this->scope_column = $this->scope
                 ";
-        $this->db->exec($sql);
+        $this->_db->exec($sql);
 
-        $sql = "UPDATE $this->table_name
+        $sql = "UPDATE $this->_table_name
                 SET
                     $this->right_column = ($this->right_column - $size)
                 WHERE
                     $this->right_column >= $start
                 AND $this->scope_column = $this->scope
                 ";
-        $this->db->exec($sql);
+        $this->_db->exec($sql);
     }
 
     /**
@@ -1001,8 +1018,8 @@ class Cobra_MPTT {
      */
     protected function lock()
     {
-        $sql = "LOCK TABLE $this->table_name WRITE";
-        $this->db->exec($sql);
+        $sql = "LOCK TABLE $this->_table_name WRITE";
+        $this->_db->exec($sql);
     }
 
     /**
@@ -1014,7 +1031,7 @@ class Cobra_MPTT {
     protected function unlock()
     {
         $sql = "UNLOCK TABLES";
-        $this->db->exec($sql);
+        $this->_db->exec($sql);
     }
 
     /**
@@ -1026,9 +1043,9 @@ class Cobra_MPTT {
      */
     protected function scope_available($scope)
     {
-        $sql = "SELECT COUNT(1) total FROM $this->table_name
+        $sql = "SELECT COUNT(1) total FROM $this->_table_name
                 WHERE $this->scope_column = $scope";
-        $result = $this->db->query($sql);
+        $result = $this->_db->query($sql);
 
         return (bool) ($result[0]['total'] == 0);
     }
@@ -1198,12 +1215,12 @@ class Cobra_MPTT {
         // Load the item from database
         if ( is_integer($item) )
         {
-            $sql = "SELECT * FROM $this->table_name
+            $sql = "SELECT * FROM $this->_table_name
                     WHERE
                         $this->primary_column = $item
                     ";
 
-            $result = $this->db->query($sql);
+            $result = $this->_db->query($sql);
             return $this->factory_set($result, $self)[0];
         }
 
@@ -1229,12 +1246,21 @@ class Cobra_MPTT {
         return $instance;
     }
 
+    public static function factory( $item = null ) {
+        $instance = new self();
+
+        if ($item)
+            $instance = $instance->factory_item($item, True);
+
+        return $instance;
+    }
+
     /*
     * Setup the PDO database instance
     */
     public function db_pdo($pdo_dsn, $pdo_user=null, $pdo_pass=null)
     {
-        $this->db = new PDO_MpttDb($pdo_dsn, $pdo_user, $pdo_pass);
+        $this->_db = new PDO_MpttDb($pdo_dsn, $pdo_user, $pdo_pass);
     }
 
 } // End PDO MPTT
