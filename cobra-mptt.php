@@ -119,6 +119,10 @@ class Cobra_MPTT {
         $this->db_init($table, $db);
     }
 
+    public function __toString() {
+        return var_export($this->_data, true);
+    }
+
     /**
      * Checks if the current node has any children.
      * 
@@ -281,6 +285,7 @@ class Cobra_MPTT {
 
             $this->_db->exec($sql);
             $this->primary_key = $this->_db->insert_id();
+            $this->loaded = true;
         }
 
         return $this;
@@ -1146,17 +1151,17 @@ class Cobra_MPTT {
             case 'count':
                 return ($this->size() - 2) / 2;
             case 'left':
-                return (INT) $this->_data[$this->left_column];
+                return (INT) @$this->_data[$this->left_column];
             case 'right':
-                return (INT) $this->_data[$this->right_column];
+                return (INT) @$this->_data[$this->right_column];
             case 'scope':
-                return (INT) $this->_data[$this->scope_column];
+                return (INT) @$this->_data[$this->scope_column];
             case 'level':
-                return (INT) $this->_data[$this->level_column];
+                return (INT) @$this->_data[$this->level_column];
             case 'primary_key':
-                return (int) $this->_data[$this->primary_column];
+                return (int) @$this->_data[$this->primary_column];
             case 'parent_key':
-                return (int) $this->_data[$this->parent_column];
+                return (int) @$this->_data[$this->parent_column];
             default:
                 return $this->$column;
         }
@@ -1191,8 +1196,10 @@ class Cobra_MPTT {
 
     public function reload()
     {
-        if ( $this->primary_key )
+        if ( (int) $this->primary_key > 0 )
             $this->factory_item( $this->primary_key, true );
+        else
+            return false;
     }
 
 
@@ -1248,13 +1255,13 @@ class Cobra_MPTT {
         $instance->_data = array();
         $instance->_objects = array();
 
-        $fields = array('primary_column','left_column', 'right_column', 'level_column', 'scope_column', 'parent_column');
-        foreach ($fields as $key)
+        $columns = array('primary_column','left_column', 'right_column', 'level_column', 'scope_column', 'parent_column');
+        foreach ($columns as $col)
         {
-            if (in_array($key, $item))
-                $instance->_data[$this->$key] = $item[$this->$key];
+            if (array_key_exists($this->$col, $item))
+                $instance->_data[$this->$col] = $item[$this->$col];
             else
-                $instance->_data[$this->$key] = null;
+                $instance->_data[$this->$col] = null;
         }
 
         return $instance;
@@ -1274,34 +1281,59 @@ class Cobra_MPTT {
     */
     public function db_init($table = null, $db = null, $schema = False)
     {
+        // Table Name
         if ( $table )
             $this->_table_name = $table;
         elseif ( self::$table_name )
             $this->_table_name = self::$table_name;
 
-        if ( is_array($db) )
+        // Database Object
+        if ( is_array($db) ) // PDO Dsn
             $this->_db = new PDO_MpttDb($db[0], $db[1], $db[2]);
-        elseif ( $db instanceof Cobra_MpttDb )
+        elseif ( $db instanceof Cobra_MpttDb ) // Custom Db Class
             $this->_db = $db;
-        elseif ( self::$db instanceof Cobra_MpttDb )
+        elseif ( self::$db instanceof Cobra_MpttDb ) // Custom Db Class
             $this->_db = self::$db;
         else
             throw new Exception("Cobra_MpttDb required", 1);
 
-        if ($schema || self::$schema_create)
+        // Table schema creation
+        if ( $schema || is_string(self::$schema_create) )
         {
-            $this->_db->exec("
-                         CREATE TABLE `$this->_table_name` (
-                        `$this->primary_column` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                        `$this->parent_column` INT UNSIGNED NULL,
-                        `$this->left_column` INT UNSIGNED NOT NULL,
-                        `$this->right_column` INT UNSIGNED NOT NULL,
-                        `$this->level_column` INT UNSIGNED NOT NULL,
-                        `$this->scope_column` INT UNSIGNED NOT NULL
-                        );
-                ");
-            self::$schema_create = False;
+            if (is_string($schema))
+                self::$schema_create = $schema;
+
+            $this->db_schema();
         }
+    }
+
+    public function db_schema()
+    {
+        switch (self::$schema_create) {
+            case 'mysql':
+                $sql = "CREATE TABLE `$this->_table_name` (
+                            `$this->primary_column` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                            `$this->parent_column` INT UNSIGNED NULL,
+                            `$this->left_column` INT UNSIGNED NOT NULL,
+                            `$this->right_column` INT UNSIGNED NOT NULL,
+                            `$this->level_column` INT UNSIGNED NOT NULL,
+                            `$this->scope_column` INT UNSIGNED NOT NULL
+                            ) ENGINE=INNODB;";
+                break;
+            case 'sqlite':
+                $sql = "CREATE TABLE `$this->_table_name` (
+                            `$this->primary_column` INTEGER PRIMARY KEY AUTOINCREMENT,
+                            `$this->parent_column` INT NULL,
+                            `$this->left_column` INT NOT NULL,
+                            `$this->right_column` INT NOT NULL,
+                            `$this->level_column` INT NOT NULL,
+                            `$this->scope_column` INT NOT NULL
+                            );";
+                break;
+        }
+        
+        $this->_db->exec($sql);
+        self::$schema_create = True;
     }
 
 } // End PDO MPTT
@@ -1314,12 +1346,17 @@ interface Cobra_MpttDb {
 
 class PDO_MpttDb extends PDO implements Cobra_MpttDb
 {
+    public function __construct($dsn, $username = null, $password = null, $driver_options = null) {
+        parent::__construct($dsn, $username, $password, $driver_options);
+        $this->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING );
+    }
+
     public function exec($sql) {
         return parent::exec($sql);
     }
 
     public function query($sql) {
-        return parent::query($sql);
+        return parent::query($sql, PDO::FETCH_ASSOC);
     }
 
     public function insert_id() {
