@@ -263,40 +263,37 @@ class Cobra_MPTT {
      */
     public function save()
     {
-        if ($this->loaded === TRUE)
+        if ($this->loaded === TRUE && $this->primary_key)
         {
-            if ( $this->primary_key ) {
-                $sql = "UPDATE $this->_table_name
-                        SET 
-                        $this->left_column = $this->left,
-                        $this->right_column = $this->right,
-                        $this->level_column = $this->level,
-                        $this->scope_column = $this->scope,
-                        $this->parent_column = $this->parent_key
-                        WHERE $this->primary_column = $this->primary_key
-                        ";
-                $this->_db->exec($sql);
-            } else {
-                $sql = "INSERT INTO $this->_table_name
-                        ($this->left_column, $this->right_column,
-                            $this->level_column, $this->scope_column
-                            $this->parent_column)
-                        VALUES (
-                            $this->left,
-                            $this->right,
-                            $this->level,
-                            $this->scope,
-                            $this->parent_key
-                            )
-                        ";
-                $this->_db->exec($sql);
+            $sql = "UPDATE $this->_table_name
+                    SET 
+                    $this->left_column = $this->left,
+                    $this->right_column = $this->right,
+                    $this->level_column = $this->level,
+                    $this->scope_column = $this->scope,
+                    $this->parent_column = $this->parent_key
+                    WHERE $this->primary_column = $this->primary_key
+                    ";
+            $this->_db->exec($sql);
+        } elseif ( ! $this->primary_key ) {
+            $sql = "INSERT INTO $this->_table_name
+                    ($this->left_column, $this->right_column,
+                        $this->level_column, $this->scope_column
+                        $this->parent_column)
+                    VALUES (
+                        $this->left,
+                        $this->right,
+                        $this->level,
+                        $this->scope,
+                        $this->parent_key
+                        )
+                    ";
 
-                $this->primary_key = $this->_db->insert_id();
-            }
-            return $this;
+            $this->_db->exec($sql);
+            $this->primary_key = $this->_db->insert_id();
         }
 
-        return FALSE;
+        return $this;
     }
 
     /**
@@ -699,7 +696,7 @@ class Cobra_MPTT {
         }
         elseif (is_null($scope) AND ! $this->loaded)
         {
-            throw new Exception(':method must be called on an Cobra_MPTT object instance.', array(':method' => 'root'));
+            throw new Exception('root() must be called on an Cobra_MPTT object instance.');
         }
         
         $sql = "SELECT * FROM $this->_table_name
