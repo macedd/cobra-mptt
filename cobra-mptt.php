@@ -947,7 +947,7 @@ class Cobra_MPTT {
             $sql .= "ORDER BY $this->left_column $direction \n";
                     
             $result = $this->_db->query($sql);
-            $this->_objects[$object_id] = $this->_db_object($result);
+            $this->_objects[$object_id] = $this->factory_set($result);
         }
         return $this->_objects[$object_id];
     }
@@ -1151,7 +1151,7 @@ class Cobra_MPTT {
             case 'parent_key':
                 return (int) $this->_data[$this->parent_column];
             default:
-                return parent::__get($column);
+                return $this->$column;
         }
     }
     
@@ -1172,7 +1172,7 @@ class Cobra_MPTT {
             case 'parent_key':
                 $this->_data[$this->parent_column] = $value;
             default:
-                return parent::__set($column, $value);
+                $this->$column = $value;
         }
     }
 
