@@ -155,9 +155,9 @@ class Cobra_MPTT {
     public function is_descendant($target)
     {
         if ( ! ($target instanceof $this))
-        {
             $target = $this->factory_item($target);
-        }
+        elseif ( !$target->loaded )
+            $target->reload();
         
         return (
                 $this->left > $target->left
@@ -176,9 +176,9 @@ class Cobra_MPTT {
     public function is_child($target)
     {
         if ( ! ($target instanceof $this))
-        {
             $target = $this->factory_item($target);
-        }
+        elseif ( !$target->loaded )
+            $target->reload();
 
         return ((int) $this->parent_key === (int) $target->primary_key);
     }
@@ -193,9 +193,9 @@ class Cobra_MPTT {
     public function is_parent($target)
     {
         if ( ! ($target instanceof $this))
-        {
             $target = $this->factory_item($target);
-        }
+        elseif ( !$target->loaded )
+            $target->reload();
 
         return ((int) $this->primary_key === (int) $target->parent_key);
     }
@@ -211,9 +211,9 @@ class Cobra_MPTT {
     public function is_sibling($target)
     {
         if ( ! ($target instanceof $this))
-        {
             $target = $this->factory_item($target);
-        }
+        elseif ( !$target->loaded )
+            $target->reload();
         
         if ((int) $this->primary_key === (int) $target->primary_key)
             return FALSE;
@@ -242,9 +242,9 @@ class Cobra_MPTT {
     public function is_in_parents($target)
     {
         if ( ! ($target instanceof $this))
-        {
             $target = $this->factory_item($target);
-        }
+        elseif ( !$target->loaded )
+            $target->reload();
 
         return $target->is_descendant($this);
     }
@@ -340,10 +340,10 @@ class Cobra_MPTT {
      */
     protected function parent_from($target, $column = NULL)
     {
-        if ( ! $target instanceof $this)
-        {
+        if ( ! ($target instanceof $this))
             $target = $this->factory_item($target);
-        }
+        elseif ( !$target->loaded )
+            $target->reload();
 
         if ($column === NULL)
         {
@@ -468,6 +468,8 @@ class Cobra_MPTT {
         }
          
         $this->unlock();
+
+        $target->loaded = False;
          
         return $this;
     }
@@ -650,7 +652,9 @@ class Cobra_MPTT {
         }
 
         $this->unlock();
+
         $this->reload();
+        $target->loaded = False;
 
         return $this;
     }
@@ -1022,7 +1026,7 @@ class Cobra_MPTT {
         try {
             $this->_db->exec($sql);
         } catch ( PDOException $e ) {
-            if ( !strpos($e->getMessage(), 'LOCK') )
+            if ( !strpos($e->getMessage(), 'syntax error') )
                 throw $e;
             // no lock support, continue
         }
@@ -1040,7 +1044,7 @@ class Cobra_MPTT {
         try {
             $this->_db->exec($sql);
         } catch ( PDOException $e ) {
-            if ( !strpos($e->getMessage(), 'LOCK') )
+            if ( !strpos($e->getMessage(), 'syntax error') )
                 throw $e;
             // no lock support, continue
         }
@@ -1197,7 +1201,7 @@ class Cobra_MPTT {
     public function reload()
     {
         if ( (int) $this->primary_key > 0 )
-            $this->factory_item( $this->primary_key, true );
+            return $this->factory_item( $this->primary_key, true );
         else
             return false;
     }
@@ -1234,11 +1238,16 @@ class Cobra_MPTT {
     public function factory_item( $item, $self = False )
     {
         // Load the item from database
-        if ( is_integer($item) )
+        if ( is_integer($item) || $item instanceof self )
         {
+            if ($item instanceof self)
+                $id = $item->primary_key;
+            else
+                $id = $item;
+
             $sql = "SELECT * FROM $this->_table_name
                     WHERE
-                        $this->primary_column = $item
+                        $this->primary_column = $id
                     ";
 
             $result = $this->_db->query($sql);
@@ -1348,7 +1357,7 @@ class PDO_MpttDb extends PDO implements Cobra_MpttDb
 {
     public function __construct($dsn, $username = null, $password = null, $driver_options = null) {
         parent::__construct($dsn, $username, $password, $driver_options);
-        $this->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING );
+        $this->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
     }
 
     public function exec($sql) {
