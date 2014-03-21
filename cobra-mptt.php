@@ -482,6 +482,9 @@ class Cobra_MPTT {
      */
     public function delete()
     {
+        if ( !$this->loaded )
+            $this->reload();
+
         $this->lock();
 
         try
@@ -647,6 +650,7 @@ class Cobra_MPTT {
         // all went well so save the parent_id if changed
         if ($parent_id != $this->parent_key)
         {
+            $this->reload();
             $this->parent_key = $parent_id;
             $this->save();
         }
@@ -733,6 +737,9 @@ class Cobra_MPTT {
      */
     public function parent()
     {
+        if ( !$this->loaded )
+            $this->reload();
+
         if ($this->is_root())
             return NULL;
 
@@ -767,6 +774,9 @@ class Cobra_MPTT {
         $object_id = "parents_$root-$with_self-$direction-$direct_parent_only";
         if (! in_array($object_id, $this->_objects) )
         {
+            if ( !$this->loaded )
+                $this->reload();
+
             $suffix = $with_self ? '=' : '';
 
             $sql = "SELECT * FROM $this->_table_name
@@ -860,6 +870,9 @@ class Cobra_MPTT {
         $object_id = "siblings_$self-$direction";
         if (! in_array($object_id, $this->_objects))
         {
+            if ( !$this->loaded )
+                $this->reload();
+
             $parent = $this->parent;
 
             $sql = "SELECT * FROM $this->_table_name
@@ -913,6 +926,9 @@ class Cobra_MPTT {
         $object_id = "descendants_$self-$direction-$direct_children_only-$leaves_only-$limit";
         if (! in_array($object_id, $this->_objects))
         {
+            if ( !$this->loaded )
+                $this->reload();
+
             $left_operator = $self ? '>=' : '>';
             $right_operator = $self ? '<=' : '<';
             
