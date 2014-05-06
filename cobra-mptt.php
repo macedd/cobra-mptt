@@ -773,7 +773,7 @@ class Cobra_MPTT {
      * @param   bool      retrieve the direct parent only
      * @return  Cobra_MPTT
      */
-    public function parents($root = TRUE, $with_self = FALSE, $direction = 'ASC', $direct_parent_only = FALSE)
+    public function parents($root = TRUE, $with_self = FALSE, $direction = 'ASC', $direct_parent_only = FALSE, $limit = FALSE)
     {
         $object_id = "parents_$root-$with_self-$direction-$direct_parent_only";
         if (! in_array($object_id, $this->_objects) )
@@ -799,6 +799,10 @@ class Cobra_MPTT {
             {
                 $sql .= "AND $this->level_column = ($this->level - 1)
                         LIMIT 1 \n";
+            }
+            elseif ($limit)
+            {
+                $sql .= "LIMIT ". (int) $limit ." \n";
             }
 
             $sql .= "ORDER BY $this->left_column $direction";
