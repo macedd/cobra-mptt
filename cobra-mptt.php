@@ -1262,7 +1262,7 @@ class Cobra_MPTT {
     public function factory_item( $item, $self = False )
     {
         // Load the item from database
-        if ( is_integer($item) || $item instanceof self )
+        if ( is_numeric($item) || $item instanceof self )
         {
             if ($item instanceof self)
                 $id = $item->primary_key;
