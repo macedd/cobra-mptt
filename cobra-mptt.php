@@ -797,16 +797,16 @@ class Cobra_MPTT {
 
             if ($direct_parent_only)
             {
-                $sql .= "AND $this->level_column = ($this->level - 1)
-                        LIMIT 1 \n";
-            }
-            elseif ($limit)
-            {
-                $sql .= "LIMIT ". (int) $limit ." \n";
+                $sql .= "AND $this->level_column = ($this->level - 1)\n";
+                $limit = 1;
             }
 
-            $sql .= "ORDER BY $this->left_column $direction";
+            $sql .= "ORDER BY $this->left_column $direction\n";
             
+            if ($limit)
+            {
+                $sql .= "LIMIT ". (int) $limit;
+            }
 
             $result = $this->_db->query($sql);
             $this->_objects[$object_id] = $this->factory_set($result);
@@ -967,17 +967,28 @@ class Cobra_MPTT {
                 $sql .= "AND $this->right_column = ($this->left_column + 1) \n";
             }
             
+            $sql .= "ORDER BY $this->left_column $direction \n";
+            
             if ($limit !== FALSE)
             {
                 $sql .= "LIMIT $limit \n";
             }
-            
-            $sql .= "ORDER BY $this->left_column $direction \n";
                     
             $result = $this->_db->query($sql);
             $this->_objects[$object_id] = $this->factory_set($result);
         }
         return $this->_objects[$object_id];
+    }
+
+    public function path()
+    {
+        // todo: http://mikehillyer.com/articles/managing-hierarchical-data-in-mysql/
+        "SELECT parent.name
+                FROM nested_category AS node,
+                        nested_category AS parent
+                WHERE node.lft BETWEEN parent.lft AND parent.rgt
+                        AND node.name = 'FLASH'
+                ORDER BY node.lft;";
     }
 
     /**
@@ -1191,7 +1202,7 @@ class Cobra_MPTT {
             case 'parent_key':
                 return (int) @$this->_data[$this->parent_column];
             default:
-                return $this->$column;
+                return $this->_data[$column];
         }
     }
     
@@ -1218,7 +1229,7 @@ class Cobra_MPTT {
                 $this->_data[$this->parent_column] = $value;
                 break;
             default:
-                $this->$column = $value;
+                $this->_data[$column] = $value;
         }
     }
 
@@ -1365,8 +1376,10 @@ class Cobra_MPTT {
                 break;
         }
         
-        $this->_db->exec($sql);
-        self::$schema_create = True;
+        if (isset($sql)) {
+            $this->_db->exec($sql);
+            self::$schema_create = True;
+        }
     }
 
 } // End PDO MPTT
