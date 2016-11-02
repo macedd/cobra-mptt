@@ -27,7 +27,10 @@ class Cobra_MPTT_Test extends PHPUnit_Extensions_Database_TestCase {
 
             // Start an item to init the database schema
             Cobra_MPTT::factory();
+
+            $this->db = $pdo;
         }
+
 
         return $this->createDefaultDBConnection($this->db, ':memory:');;
     }
