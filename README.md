@@ -1,12 +1,9 @@
-#MPTT (Modified Preorder Tree Traversal) class for PDO
+[![Build Status](https://travis-ci.org/thiagof/cobra-mptt.svg?branch=master)](https://travis-ci.org/thiagof/cobra-mptt)
 
-Preambule: MPTT is an eficient hierarchical tree algorithm also known as `Nested Sets`.
+#MPTT (Modified Preorder Tree Traversal) library for PDO
 
-Tired of looking for a stand-alone PHP Mptt implementation? Just found.
-Cobra MPTT is a port of the work from the Kohana people.
+MPTT is an eficient hierarchical tree algorithm also known as **Nested Sets**.
 
-Many improvements on performance and reliability has been done. Check the example and tests for usage.
+This library ships a simple a *database interface* which allows the creation of custom database layers. This means you can use the library with any sql database orm/adapter.
 
-It also ships a simple a *database interface* which allows you to create **your own** database layer. This means you can, in a simply manner, use the class with the database/class of your linking.
-
-Enjoy!
+Please checkout `./tests/` and `./examples/` for usage instructions.
