@@ -1,5 +1,4 @@
-<?php //defined('SYSPATH') OR die('No direct access allowed.');
-
+<?php 
 /**
  * Modified Preorder Tree Traversal Class.
  * 
@@ -15,7 +14,11 @@
  * @author Thiago Fernandes
  */
 
-class Cobra_MPTT {
+namespace Cobra_MPTT;
+use Exception;
+use PDOException;
+
+class Mptt {
 
     /**
      * @access  public
@@ -1333,13 +1336,13 @@ class Cobra_MPTT {
 
         // Database Object
         if ( is_array($db) ) // PDO Dsn
-            $this->_db = new PDO_MpttDb($db[0], $db[1], $db[2]);
-        elseif ( $db instanceof Cobra_MpttDb ) // Custom Db Class
+            $this->_db = new Mptt_DB_PDO($db[0], $db[1], $db[2]);
+        elseif ( $db instanceof Mptt_DB ) // Custom Db Class
             $this->_db = $db;
-        elseif ( self::$db instanceof Cobra_MpttDb ) // Custom Db Class
+        elseif ( self::$db instanceof Mptt_DB ) // Custom Db Class
             $this->_db = self::$db;
         else
-            throw new Exception("Cobra_MpttDb required", 1);
+            throw new Exception("Mptt_DB required", 1);
 
         // Table schema creation
         if ( $schema || is_string(self::$schema_create) )
@@ -1383,33 +1386,3 @@ class Cobra_MPTT {
     }
 
 } // End PDO MPTT
-
-interface Cobra_MpttDb {
-    public function exec($sql);
-    public function query($sql);
-    public function insert_id();
-}
-
-class PDO_MpttDb extends PDO implements Cobra_MpttDb
-{
-    public function __construct($dsn, $username = null, $password = null, $driver_options = null)
-    {
-        parent::__construct($dsn, $username, $password, $driver_options);
-        $this->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
-    }
-
-    public function exec($sql)
-    {
-        return parent::exec($sql);
-    }
-
-    public function query($sql)
-    {
-        return parent::query($sql, PDO::FETCH_ASSOC);
-    }
-
-    public function insert_id()
-    {
-        return self::lastInsertId();
-    }
-}

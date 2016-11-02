@@ -9,8 +9,8 @@
  * @license    http://www.opensource.org/licenses/isc-license.txt
  */
 
-#require_once 'PHPUnit/Extensions/Database/TestCase.php';
-require_once dirname(__FILE__) .'/../cobra-mptt.php';
+use Cobra_MPTT\Mptt as Cobra_MPTT;
+use Cobra_MPTT\Mptt_DB_PDO;
 
 class Cobra_MPTT_Test extends PHPUnit_Extensions_Database_TestCase {
 
@@ -18,7 +18,7 @@ class Cobra_MPTT_Test extends PHPUnit_Extensions_Database_TestCase {
     {
         if ( ! isset($this->db) )
         {
-            $pdo = new PDO_MpttDb('sqlite::memory:');
+            $pdo = new Mptt_DB_PDO('sqlite::memory:');
 
             // Configure Cobra Defaults
             Cobra_MPTT::$db = $pdo;

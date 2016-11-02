@@ -11,6 +11,12 @@
             "email": "thiago@internetbudi.com.br"
         }
     ],
+    "autoload": {
+        "psr-4": {
+            "Cobra_MPTT\\": "src/"
+        }
+    },
     "require": {
+        "ext-pdo": "*"
     }
 }
