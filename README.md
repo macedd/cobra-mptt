@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/thiagof/cobra-mptt.svg?branch=master)](https://travis-ci.org/thiagof/cobra-mptt)
 
-#MPTT (Modified Preorder Tree Traversal) library for PDO
+# MPTT (Modified Preorder Tree Traversal) library for PDO
 
 MPTT is an eficient hierarchical tree algorithm also known as **Nested Sets**.
 
