@@ -1,13 +1,13 @@
 {
-    "name": "thiagof/cobra-mptt",
+    "name": "macedd/cobra-mptt",
     "description": "Class implementing Modified Preorder Tree Traversal (Nested Sets)",
     "require-dev": {
-        "phpunit/phpunit": "^4.8",
-        "phpunit/dbunit": "^2.0"
+        "phpunit/phpunit": "^7.0",
+        "phpunit/dbunit": "^1.3"
     },
     "authors": [
         {
-            "name": "Thiago Fernandes",
+            "name": "Thiago Macedo",
             "email": "thiago@internetbudi.com.br"
         }
     ],
@@ -17,6 +17,7 @@
         }
     },
     "require": {
+        "php": "^7.1",
         "ext-pdo": "*"
     }
 }
